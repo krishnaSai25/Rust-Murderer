@@ -1,0 +1,87 @@
+import java.io.*;
+import java.util.*;
+
+public class Solution {
+    public static void main(String[] args) throws IOException {
+        final StringBuffer sb = new StringBuffer();
+        final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        
+        //For each test case
+        for(byte b = Byte.parseByte(br.readLine()); b > 0; --b){
+            
+            //To Get number of cities
+            String[] line = br.readLine().split(" ");
+            final int N = Integer.parseInt(line[0]);
+            
+            //Initializing edges
+            final List<Set<Integer>> edge = new ArrayList<Set<Integer>>(N);
+            for(int i = 0; i < N; ++i){
+                edge.add(new HashSet<Integer>());
+            }
+            
+            //Get edges
+            for(short M = Short.parseShort(line[1]); M > 0; --M){
+                line = br.readLine().split(" ");
+                final int X = Integer.parseInt(line[0]) - 1;
+                final int Y = Integer.parseInt(line[1]) - 1;
+                edge.get(X).add(Y);
+                edge.get(Y).add(X);
+            }
+            
+            //Get Rust's starting position and find min distances
+            final int S = Integer.parseInt(br.readLine()) - 1;
+            final int[] mindist = Edgeless(edge, S, N);
+            
+            //Print output
+            for(int i = 0; i < S; sb.append(mindist[i++] + " ")){}
+            for(int i = S; ++i < N; sb.append(mindist[i] + " ")){}
+            sb.append("\n");
+        }
+        System.out.print(sb);
+    }
+    
+    private static int[] Edgeless(final List<Set<Integer>> edge, final int origin, final int N){
+        
+        //Initialize distances
+        final int[] dist = new int[N];
+        for(int i = 0; i < N; dist[i++] = -1){}
+        
+        //Create a list of unvisited cities
+        final List<Integer> cities = new LinkedList<Integer>();
+        for(int i = 0; i < origin; cities.add(i++)){}
+        for(int i = origin; ++i < N; cities.add(i)){}
+        
+        //Find min distances
+        final Queue<Integer> q = new LinkedList<Integer>();
+        q.add(origin);
+        do {
+            final int city = q.poll();
+            final int d = ++dist[city];
+            final Set<Integer> cityRoads = edge.get(city);
+            for(Iterator<Integer> it = cities.iterator(); it.hasNext();){
+                final int unvisitedCity = it.next();
+                if(!cityRoads.contains(unvisitedCity)){
+                    dist[unvisitedCity] = d;
+                    it.remove();
+                    q.add(unvisitedCity);
+                }
+            }
+        } while (!q.isEmpty());
+        
+        return dist;
+    }
+    
+    private static class path implements Comparable<path> {
+        public final int cityId;
+        public final int d;
+        
+        public path(final int cityId, final int d){
+            this.cityId = cityId;
+            this.d = d;
+        }
+        
+        public int compareTo(final path s){
+            return Integer.compare(this.d, s.d);
+        }
+    }
+}
